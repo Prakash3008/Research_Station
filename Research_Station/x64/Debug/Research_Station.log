@@ -1,0 +1,9 @@
+﻿  Camera.cpp
+  Mesh.cpp
+E:\TCD\Computer Graphics\Research_Station\Components\Mesh.cpp(80,43): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+  Model.cpp
+E:\TCD\Computer Graphics\Research_Station\Components\Model.cpp(262,91): warning C4267: 'argument': conversion from 'size_t' to 'GLuint', possible loss of data
+E:\TCD\Computer Graphics\Research_Station\Components\Model.cpp(270,93): warning C4267: 'argument': conversion from 'size_t' to 'GLuint', possible loss of data
+  main.cpp
+  Generating Code...
+  Research_Station.vcxproj -> E:\TCD\Computer Graphics\Research_Station\x64\Debug\Research_Station.exe
