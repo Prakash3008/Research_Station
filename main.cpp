@@ -1,55 +1,50 @@
-//#include <glad/glad.h>
-//#include <GLFW/glfw3.h>
-//#include <iostream>
-//#include <vector>
-//#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/type_ptr.hpp>
-//#define STB_IMAGE_IMPLEMENTATION
-//#include<stb/stb_image.h>
-//
-//#include<fstream>
-//#include<sstream>
-//#include<iostream>
-//#include<cerrno>
-//#include<string>
-//#include<json/json.h>
-//#define GLM_ENABLE_EXPERIMENTAL
-//#include<glm/gtx/rotate_vector.hpp>
-//#include<glm/gtx/vector_angle.hpp>
-//
-//#include <assimp/cimport.h> // scene importer
-//#include <assimp/scene.h> // collects data
-//#include <assimp/postprocess.h> // various extra operations
+#define STB_IMAGE_IMPLEMENTATION
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include <stdio.h>
+#include <math.h>
+#include <cmath>
+#include "commonFns.h"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "glm/gtx/string_cast.hpp"
 //------- Ignore this ----------
 #include<filesystem>
 namespace fs = std::filesystem;
 //------------------------------
-#include "../Research_Station/Headers/Model.h"
-#include "../Research_Station/Headers/VBO.h"
-#include "../Research_Station/Headers/VAO.h"
-#include "../Research_Station/Headers/Mesh.h"
-#include "../Research_Station/Headers/Camera.h"
-#include "../Research_Station/Headers/Texture.h"
+#include "Headers/Model.h"
+#include "Headers/Mesh.h"
+#include "Headers/Camera.h"
+#include "Headers/Window.h"
+#include "Headers/shaderClass.h"
+
+Window mainWindow;
+Camera camera;
+
+GLfloat deltaTime = 0.0f;
+GLfloat lastTime = 0.0f;
+GLfloat curAngle = 0.0f;
+GLfloat blackhawkAngle = 0.0f;
+const float toRadians = 3.14159265f / 180.0f;
 
 
-const unsigned int width = 800;
-const unsigned int height = 800;
-
+GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
+uniformSpecularIntensity = 0, uniformShininess = 0, uniformOmniLightPos = 0, uniformFarPlane = 0;
 
 
 float skyboxVertices[] =
 {
 	//   Coordinates
-	-1.0f, -1.0f,  1.0f,//        7--------6
-	 1.0f, -1.0f,  1.0f,//       /|       /|
-	 1.0f, -1.0f, -1.0f,//      4--------5 |
-	-1.0f, -1.0f, -1.0f,//      | |      | |
-	-1.0f,  1.0f,  1.0f,//      | 3------|-2
-	 1.0f,  1.0f,  1.0f,//      |/       |/
-	 1.0f,  1.0f, -1.0f,//      0--------1
-	-1.0f,  1.0f, -1.0f
+	-100.0f, -100.0f,  100.0f,//        7--------6
+	 100.0f, -100.0f,  100.0f,//       /|       /|
+	 100.0f, -100.0f, -100.0f,//      4--------5 |
+	-100.0f, -100.0f, -100.0f,//      | |      | |
+	-100.0f,  100.0f,  100.0f,//      | 3------|-2
+	 100.0f,  100.0f,  100.0f,//      |/       |/
+	 100.0f,  100.0f, -100.0f,//      0--------1
+	-100.0f,  100.0f, -100.0f
 };
 
 unsigned int skyboxIndices[] =
@@ -75,84 +70,42 @@ unsigned int skyboxIndices[] =
 };
 
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+//void processInput(GLFWwindow* window);
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+	glViewport(0, 0, width, height);
+}
+
+
+
 
 int main()
 {
-	// Initialize GLFW
-	glfwInit();
+	mainWindow = Window(1024, 768); 
+	mainWindow.Initialise();
 
-	// Tell GLFW what version of OpenGL we are using 
-	// In this case we are using OpenGL 3.3
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	// Tell GLFW we are using the CORE profile
-	// So that means we only have the modern functions
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// Create a GLFWwindow object of 800 by 800 pixels, naming it "YoutubeOpenGL"
-	GLFWwindow* window = glfwCreateWindow(width, height, "YoutubeOpenGL", NULL, NULL);
-	// Error check if the window fails to create
-	if (window == NULL)
-	{
-		std::cout << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-	// Introduce the window into the current context
-	glfwMakeContextCurrent(window);
-
-	//Load GLAD so it configures OpenGL
-	gladLoadGL();
-	// Specify the viewport of OpenGL in the Window
-	// In this case the viewport goes from x = 0, y = 0, to x = 800, y = 800
-	glViewport(0, 0, width, height);
-
-
-
-
+	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f, 5.0f, 0.5f);
 
 	// Generates Shader objects
-	Shader shaderProgram("../Research_Station/Shaders/default.vert", "../Research_Station/Shaders/default.frag");
-	Shader skyboxShader("../Research_Station/Shaders/skybox.vert", "../Research_Station/Shaders/skybox.frag");
+	Shader shaderProgram("Shaders/default.vert", "Shaders/default.frag");
+	Shader skyboxShader("Shaders/skybox.vert", "Shaders/skybox.frag");
+
+	//fish = Model();
+	//fish.LoadModel("Resources/Models/Fish/fish.obj");
 
 	// Take care of all the light related things
 	glm::vec4 lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
 
 	shaderProgram.Activate();
-	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-	glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
+	//glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
+	//glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 	skyboxShader.Activate();
 	glUniform1i(glGetUniformLocation(skyboxShader.ID, "skybox"), 0);
 
-	std::cout << "After Shaders";
 
 	
-
-	// Enables the Depth Buffer
-	glEnable(GL_DEPTH_TEST);
-
-	// Enables Cull Facing
-	glEnable(GL_CULL_FACE);
-	// Keeps front faces
-	glCullFace(GL_FRONT);
-	// Uses counter clock-wise standard
-	glFrontFace(GL_CCW);
-
-	// Creates camera object
-	Camera camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
-
-	/*
-	* I'm doing this relative path thing in order to centralize all the resources into one folder and not
-	* duplicate them between tutorial folders. You can just copy paste the resources from the 'Resources'
-	* folder and then give a relative path from this folder to whatever resource you want to get to.
-	* Also note that this requires C++17, so go to Project Properties, C/C++, Language, and select C++17
-	*/
-	std::string modelPath = "../Research_Station/Resources/models/scene.gltf";
-	// Load in models
-	Model model(modelPath.c_str());
-
-
 	// Variables to create periodic event for FPS displaying
 	double prevTime = 0.0;
 	double crntTime = 0.0;
@@ -184,12 +137,12 @@ int main()
 	// All the faces of the cubemap (make sure they are in this exact order)
 	std::string facesCubemap[6] =
 	{
-		"../Research_Station/Resources/Textures/Underwater/px_flipped.jpg",
-		"../Research_Station/Resources/Textures/Underwater/nx.jpg",
-		"../Research_Station/Resources/Textures/Underwater/py.jpg",
-		"../Research_Station/Resources/Textures/Underwater/ny.jpg",
-		"../Research_Station/Resources/Textures/Underwater/pz.jpg",
-		"../Research_Station/Resources/Textures/Underwater/nz.jpg"
+		"Resources/Textures/Underwater/px.jpg",
+		"Resources/Textures/Underwater/nx.jpg",
+		"Resources/Textures/Underwater/py.jpg",
+		"Resources/Textures/Underwater/ny.jpg",
+		"Resources/Textures/Underwater/pz.jpg",
+		"Resources/Textures/Underwater/nz.jpg"
 	};
 
 
@@ -237,13 +190,16 @@ int main()
 	}
 
 
+	Model model("Resources/Models/Fish/fish.obj");
+
 
 
 	// Main while loop
-	while (!glfwWindowShouldClose(window))
+	while (!mainWindow.getShouldClose())
 	{
 		// Updates counter and times
 		crntTime = glfwGetTime();
+		deltaTime = crntTime - prevTime;
 		timeDiff = crntTime - prevTime;
 		counter++;
 
@@ -253,42 +209,59 @@ int main()
 			std::string FPS = std::to_string((1.0 / timeDiff) * counter);
 			std::string ms = std::to_string((timeDiff / counter) * 1000);
 			std::string newTitle = "YoutubeOpenGL - " + FPS + "FPS / " + ms + "ms";
-			glfwSetWindowTitle(window, newTitle.c_str());
+			mainWindow.setTitle(newTitle);
 
 			// Resets times and counter
 			prevTime = crntTime;
 			counter = 0;
 
 			// Use this if you have disabled VSync
-			camera.Inputs(window);
+			//camera.Inputs(window);
 		}
+
+		// Take care of all GLFW events
+		glfwPollEvents();
+		
+
+		camera.keyControl(mainWindow.getsKeys(), deltaTime);
+		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+
+		std::cout << "Camera Position: " << glm::to_string(camera.getCameraPosition()) << std::endl;
+
 
 		// Specify the color of the background
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 		// Clean the back buffer and depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glm::mat4 vw_model = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Identity matrix
+
+		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
+
+		glm::mat4 view = camera.calculateViewMatrix();
+
+		// Pass these matrices to your shader
+		shaderProgram.Activate();
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(vw_model));
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+
+		model.Draw(shaderProgram.ID);
+
 
 		// Handles camera inputs (delete this if you have disabled VSync)
-		camera.Inputs(window);
 		// Updates and exports the camera matrix to the Vertex Shader
-		camera.updateMatrix(45.0f, 0.1f, 100.0f);
-
 
 		// Draw the normal model
-		model.Draw(shaderProgram, camera);
+		//model.Draw(shaderProgram, camera);
 
 		// Since the cubemap will always have a depth of 1.0, we need that equal sign so it doesn't get discarded
 		glDepthFunc(GL_LEQUAL);
 
 		skyboxShader.Activate();
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::mat4(1.0f);
 		// We make the mat4 into a mat3 and then a mat4 again in order to get rid of the last row and column
 		// The last row and column affect the translation of the skybox (which we don't want to affect)
 		//view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
-		projection = glm::perspective(glm::radians(camera.Zoom), (float)width / (float)height, 0.1f, 100.0f);
-
-		view = glm::mat4(glm::mat3(glm::lookAt(camera.Position, camera.Position + camera.Orientation, camera.Up)));
 		// projection = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.0f);
 		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
@@ -307,9 +280,8 @@ int main()
 
 
 		// Swap the back buffer with the front buffer
-		glfwSwapBuffers(window);
-		// Take care of all GLFW events
-		glfwPollEvents();
+		mainWindow.swapBuffers();
+
 	}
 
 
@@ -317,9 +289,6 @@ int main()
 	// Delete all the objects we've created
 	shaderProgram.Delete();
 	skyboxShader.Delete();
-	// Delete window before ending the program
-	glfwDestroyWindow(window);
-	// Terminate GLFW before ending the program
-	glfwTerminate();
+
 	return 0;
 }

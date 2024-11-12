@@ -1,0 +1,26 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "e:\\tcd\\computer graphics\\research_station\\commonfns.h",
+        "ProvidedModule": "",
+        "Includes": [
+            "e:\\tcd\\computer graphics\\research_station\\libraries\\include\\stb\\stb_image.h",
+            "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\stdio.h",
+            "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\corecrt.h",
+            "e:\\program files\\visual studio\\vc\\tools\\msvc\\14.41.34120\\include\\vcruntime.h",
+            "e:\\program files\\visual studio\\vc\\tools\\msvc\\14.41.34120\\include\\sal.h",
+            "e:\\program files\\visual studio\\vc\\tools\\msvc\\14.41.34120\\include\\concurrencysal.h",
+            "e:\\program files\\visual studio\\vc\\tools\\msvc\\14.41.34120\\include\\vadefs.h",
+            "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\corecrt_wstdio.h",
+            "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\corecrt_stdio_config.h",
+            "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\stdlib.h",
+            "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\corecrt_malloc.h",
+            "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\corecrt_search.h",
+            "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\stddef.h",
+            "c:\\program files (x86)\\windows kits\\10\\include\\10.0.22621.0\\ucrt\\corecrt_wstdlib.h",
+            "e:\\program files\\visual studio\\vc\\tools\\msvc\\14.41.34120\\include\\limits.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "Research_Station\\x64\\Debug\\commonFns.h.obj",
+            "outputs": [
+                "E:\\TCD\\Computer Graphics\\Research_Station\\Research_Station\\x64\\Debug\\vc143.pdb",
+                "Research_Station\\x64\\Debug\\",
+                "E:\\TCD\\Computer Graphics\\Research_Station\\Research_Station\\x64\\Debug\\commonFns.h.ifc"
+            ],
+            "provides": [
+                {
+                    "logical-name": "commonFns.h",
+                    "source-path": "e:\\tcd\\computer graphics\\research_station\\commonfns.h",
+                    "lookup-method": "absolute"
+                }
+            ],
+            "requires": []
+        }
+    ]
+}
