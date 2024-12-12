@@ -2,6 +2,8 @@ E:\TCD\Computer Graphics\Research_Station\Components\Camera.cpp;E:\TCD\Computer 
 E:\TCD\Computer Graphics\Research_Station\Components\Mesh.cpp;E:\TCD\Computer Graphics\Research_Station\Research_Station\x64\Debug\Mesh.obj
 E:\TCD\Computer Graphics\Research_Station\Components\Model.cpp;E:\TCD\Computer Graphics\Research_Station\Research_Station\x64\Debug\Model.obj
 E:\TCD\Computer Graphics\Research_Station\Components\shaderClass.cpp;E:\TCD\Computer Graphics\Research_Station\Research_Station\x64\Debug\shaderClass.obj
+E:\TCD\Computer Graphics\Research_Station\Components\StationMesh.cpp;E:\TCD\Computer Graphics\Research_Station\Research_Station\x64\Debug\StationMesh.obj
+E:\TCD\Computer Graphics\Research_Station\Components\StationTexture.cpp;E:\TCD\Computer Graphics\Research_Station\Research_Station\x64\Debug\StationTexture.obj
 E:\TCD\Computer Graphics\Research_Station\Components\Window.cpp;E:\TCD\Computer Graphics\Research_Station\Research_Station\x64\Debug\Window.obj
 E:\TCD\Computer Graphics\Research_Station\glad.c;E:\TCD\Computer Graphics\Research_Station\Research_Station\x64\Debug\glad.obj
 E:\TCD\Computer Graphics\Research_Station\main.cpp;E:\TCD\Computer Graphics\Research_Station\Research_Station\x64\Debug\main.obj

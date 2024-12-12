@@ -27,7 +27,6 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
 	if (keys[GLFW_KEY_W])
 	{
 		position += front * velocity;
-		std::cout << velocity << glm::to_string(position) << std::endl;
 	}
 
 	if (keys[GLFW_KEY_S])

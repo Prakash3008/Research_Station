@@ -19,6 +19,8 @@ namespace fs = std::filesystem;
 #include "Headers/Camera.h"
 #include "Headers/Window.h"
 #include "Headers/shaderClass.h"
+#include "Headers/StationMesh.h"
+#include "Headers/StationTexture.h"
 
 Window mainWindow;
 Camera camera;
@@ -35,6 +37,10 @@ float rotationAngle = 0.0f;    // Rotation angle in degrees
 float rotationSpeed = 180.0f;   // Rotation increment per reversal (degrees)
 float upperBound = 100.0f;
 float lowerBound = -100.0f;
+
+std::vector<StationMesh*> meshList;
+StationTexture floorTexture;
+StationTexture wallTexture;
 
 
 
@@ -85,19 +91,124 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
+void createStation() {
+	unsigned int floorIndices[] = {
+		0, 2, 1,
+		1, 2, 3
+	};
+
+	unsigned int wallIndices[] = {
+	0, 2, 1,
+	1, 2, 3
+	};
+
+	GLfloat floorVertices[] = {
+		// Floor
+		-20.0f, 0.0f, -10.0f,  0.0f, 0.0f,   0.0f, -1.0f, 0.0f,
+		 20.0f, 0.0f, -10.0f,  20.0f, 0.0f,  0.0f, -1.0f, 0.0f,
+		-20.0f, 0.0f, 10.0f,   0.0f, 10.0f,  0.0f, -1.0f, 0.0f,
+		 20.0f, 0.0f, 10.0f,   20.0f, 10.0f, 0.0f, -1.0f, 0.0f
+	};
+
+	GLfloat wallVertices[] = {
+		// Front Wall
+		-20.0f, 0.0f, 10.0f,   0.0f, 0.0f,   0.0f, 0.0f, 1.0f,
+		 20.0f, 0.0f, 10.0f,   20.0f, 0.0f,  0.0f, 0.0f, 1.0f,
+		-20.0f, 10.0f, 10.0f,  0.0f, 10.0f,  0.0f, 0.0f, 1.0f,
+		 20.0f, 10.0f, 10.0f,  20.0f, 10.0f, 0.0f, 0.0f, 1.0f,
+
+		 // Back Wall
+		 -20.0f, 0.0f, -10.0f,  0.0f, 0.0f,   0.0f, 0.0f, -1.0f,
+		  20.0f, 0.0f, -10.0f,  20.0f, 0.0f,  0.0f, 0.0f, -1.0f,
+		 -20.0f, 10.0f, -10.0f, 0.0f, 10.0f,  0.0f, 0.0f, -1.0f,
+		  20.0f, 10.0f, -10.0f, 20.0f, 10.0f, 0.0f, 0.0f, -1.0f,
+
+		  // Left Wall
+		  -20.0f, 0.0f, -10.0f,  0.0f, 0.0f,   -1.0f, 0.0f, 0.0f,
+		  -20.0f, 0.0f, 10.0f,   20.0f, 0.0f,  -1.0f, 0.0f, 0.0f,
+		  -20.0f, 10.0f, -10.0f, 0.0f, 10.0f,  -1.0f, 0.0f, 0.0f,
+		  -20.0f, 10.0f, 10.0f,  20.0f, 10.0f, -1.0f, 0.0f, 0.0f,
+
+		  // Right Wall
+		   20.0f, 0.0f, -10.0f,  0.0f, 0.0f,   1.0f, 0.0f, 0.0f,
+		   20.0f, 0.0f, 10.0f,   20.0f, 0.0f,  1.0f, 0.0f, 0.0f,
+		   20.0f, 10.0f, -10.0f, 0.0f, 10.0f,  1.0f, 0.0f, 0.0f,
+		   20.0f, 10.0f, 10.0f,  20.0f, 10.0f, 1.0f, 0.0f, 0.0f
+	};
+
+	GLfloat roofVertices[] = {
+		// Roof
+		-20.0f, 10.0f, -10.0f, 0.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+		 20.0f, 10.0f, -10.0f, 20.0f, 0.0f,  0.0f, 1.0f, 0.0f,
+		-20.0f, 10.0f, 10.0f,  0.0f, 10.0f,  0.0f, 1.0f, 0.0f,
+		 20.0f, 10.0f, 10.0f,  20.0f, 10.0f, 0.0f, 1.0f, 0.0f
+	};
+
+	StationMesh* floor = new StationMesh();
+	floor->CreateMesh(floorVertices, floorIndices, 32, 6);
+	meshList.push_back(floor);
+
+	for (int i = 0; i < 4; i++) { // Add all walls (front, back, left, right)
+		StationMesh* wall = new StationMesh();
+		wall->CreateMesh(&wallVertices[i * 32], wallIndices, 32, 6);
+		meshList.push_back(wall);
+	}
+
+	StationMesh* roof = new StationMesh();
+	roof->CreateMesh(roofVertices, wallIndices, 32, 6);
+	meshList.push_back(roof);
+}
+
+void RenderStation(unsigned int shaderID) {
+	glUniform1i(glGetUniformLocation(shaderID, "matTexture"), 1);
+
+	glm::mat4 model;
+
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(10.0f, -5.0f, 0.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	floorTexture.UseStationTexture();
+	//shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+	meshList[0]->RenderMesh();
+
+	// Render Front Wall
+	for (int i = 1; i <= 4; i++) {
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		wallTexture.UseStationTexture();
+		meshList[i]->RenderMesh();
+	}
+
+	// Render Roof
+	model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+	floorTexture.UseStationTexture(); // Use a different texture for the roof if available
+	meshList[5]->RenderMesh();
+}
+
 
 
 
 int main()
 {
-	mainWindow = Window(1920, 1080); 
+	mainWindow = Window(1280, 768); 
 	mainWindow.Initialise();
+
+	createStation();
+
+	floorTexture = StationTexture("Resources/Textures/floor.jpg");
+	floorTexture.LoadStationTexture();
+	wallTexture = StationTexture("Resources/Textures/wall.jpg");
+	wallTexture.LoadStationTexture();
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f, 5.0f, 0.5f);
 
 	// Generates Shader objects
 	Shader shaderProgram("Shaders/default.vert", "Shaders/default.frag");
 	Shader skyboxShader("Shaders/skybox.vert", "Shaders/skybox.frag");
+	Shader stationShader("Shaders/station.vert", "Shaders/station.frag");
 
 	//fish = Model();
 	//fish.LoadModel("Resources/Models/Fish/fish.obj");
@@ -107,8 +218,6 @@ int main()
 	glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
 
 	shaderProgram.Activate();
-	//glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColor"), lightColor.x, lightColor.y, lightColor.z, lightColor.w);
-	//glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 	skyboxShader.Activate();
 	glUniform1i(glGetUniformLocation(skyboxShader.ID, "skybox"), 0);
 
@@ -204,7 +313,7 @@ int main()
 
 	Model seahorse_model("Resources/Models/Seahorse/Seahorse.obj");
 
-	Model coral("Resources/Models/Coral/10010_Coral_v1.obj");
+	//Model coral("Resources/Models/Coral/10010_Coral_v1.obj");
 
 	
 
@@ -231,6 +340,8 @@ int main()
 
 		// Take care of all GLFW events
 		glfwPollEvents();
+		glDisable(GL_CULL_FACE);
+
 		
 
 		camera.keyControl(mainWindow.getsKeys(), deltaTime);
@@ -264,9 +375,19 @@ int main()
 
 
 
-		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 500.0f);
 
 		glm::mat4 view = camera.calculateViewMatrix();
+
+		stationShader.Activate();
+		glm::mat4 station_floor = glm::mat4(1.0f);
+
+		station_floor = glm::translate(station_floor, glm::vec3(10.0f, -100.0f, 0.0f)); // Translate
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(station_floor));
+		glUniformMatrix4fv(glGetUniformLocation(stationShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(stationShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+		RenderStation(stationShader.ID);
 
 		// Pass these matrices to your shader
 		shaderProgram.Activate();
@@ -308,6 +429,9 @@ int main()
 
 		// Since the cubemap will always have a depth of 1.0, we need that equal sign so it doesn't get discarded
 		glDepthFunc(GL_LEQUAL);
+
+		
+
 
 		skyboxShader.Activate();
 		// We make the mat4 into a mat3 and then a mat4 again in order to get rid of the last row and column
