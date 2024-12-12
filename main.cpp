@@ -29,6 +29,14 @@ GLfloat curAngle = 0.0f;
 GLfloat blackhawkAngle = 0.0f;
 const float toRadians = 3.14159265f / 180.0f;
 
+float modelPositionZ = 0.0f;   // Position along the Z-axis
+float movementSpeed = 1.0f;    // Movement speed
+float rotationAngle = 0.0f;    // Rotation angle in degrees
+float rotationSpeed = 180.0f;   // Rotation increment per reversal (degrees)
+float upperBound = 100.0f;
+float lowerBound = -100.0f;
+
+
 
 GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0, uniformEyePosition = 0,
 uniformSpecularIntensity = 0, uniformShininess = 0, uniformOmniLightPos = 0, uniformFarPlane = 0;
@@ -82,7 +90,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 int main()
 {
-	mainWindow = Window(1024, 768); 
+	mainWindow = Window(1920, 1080); 
 	mainWindow.Initialise();
 
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f, 5.0f, 0.5f);
@@ -191,7 +199,14 @@ int main()
 
 
 	Model model("Resources/Models/Fish/fish.obj");
+	// Create transformation matrix for the model
+	
 
+	Model seahorse_model("Resources/Models/Seahorse/Seahorse.obj");
+
+	Model coral("Resources/Models/Coral/10010_Coral_v1.obj");
+
+	
 
 
 	// Main while loop
@@ -205,12 +220,7 @@ int main()
 
 		if (timeDiff >= 1.0 / 30.0)
 		{
-			// Creates new title
-			std::string FPS = std::to_string((1.0 / timeDiff) * counter);
-			std::string ms = std::to_string((timeDiff / counter) * 1000);
-			std::string newTitle = "YoutubeOpenGL - " + FPS + "FPS / " + ms + "ms";
-			mainWindow.setTitle(newTitle);
-
+			
 			// Resets times and counter
 			prevTime = crntTime;
 			counter = 0;
@@ -226,14 +236,33 @@ int main()
 		camera.keyControl(mainWindow.getsKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 
-		std::cout << "Camera Position: " << glm::to_string(camera.getCameraPosition()) << std::endl;
-
 
 		// Specify the color of the background
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 		// Clean the back buffer and depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glm::mat4 vw_model = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Identity matrix
+
+		// Update position for linear movement
+		modelPositionZ += movementSpeed * deltaTime;
+
+		// Check bounds and reverse direction, add rotation
+		if (modelPositionZ > upperBound) {
+			movementSpeed = -1.0f;              // Reverse direction
+			rotationAngle += rotationSpeed;    // Rotate model
+		}
+		if (modelPositionZ < lowerBound) {
+			movementSpeed = 1.0f;              // Reverse direction
+			rotationAngle += rotationSpeed;    // Rotate model
+		}
+		glm::mat4 modelMatrix = glm::mat4(1.0f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, modelPositionZ)); // Translate
+
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotationAngle), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate
+
+		//glm::mat4 fishMatrix = glm::mat4(1.0f);
+		//fishMatrix = glm::translate(fishMatrix, glm::vec3(0.0f, sin(glfwGetTime()) * 0.5f, 0.0f)); // Oscillate up and down
+
+
 
 		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
@@ -241,13 +270,35 @@ int main()
 
 		// Pass these matrices to your shader
 		shaderProgram.Activate();
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(vw_model));
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
 
 		model.Draw(shaderProgram.ID);
 
+		glm::mat4 coral_transform = glm::mat4(1.0f);
+
+		coral_transform = glm::translate(coral_transform, glm::vec3(10.0f, -100.0f, 0.0f)); // Translate
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(coral_transform));
+
+
+		//coral.Draw(shaderProgram.ID);
+
+		glm::mat4 seahorseModel = glm::mat4(1.0f);
+
+		seahorseModel = glm::translate(seahorseModel, glm::vec3(10.0f, -20.0f, modelPositionZ)); // Translate
+		seahorseModel = glm::rotate(seahorseModel, glm::radians(rotationAngle), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(seahorseModel));
+
+
+		seahorse_model.Draw(shaderProgram.ID);
+
+		glm::mat4 vw_model = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Identity matrix
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(vw_model));
 
 		// Handles camera inputs (delete this if you have disabled VSync)
 		// Updates and exports the camera matrix to the Vertex Shader

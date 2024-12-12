@@ -43,7 +43,7 @@ int Window::Initialise()
 
 
 	// Create the window
-	mainWindow = glfwCreateWindow(width, height, "Test Window", NULL, NULL);
+	mainWindow = glfwCreateWindow(width, height, "Underwater Research Station", NULL, NULL);
 	if (!mainWindow)
 	{
 		printf("Error creating GLFW window!");
