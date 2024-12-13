@@ -138,7 +138,7 @@ void createStation() {
 
 	GLfloat roofVertices[] = {
 		// Roof
-		-20.0f, 10.0f, -10.0f, 0.0f, 0.0f,   0.0f, 1.0f, 0.0f,
+		-20.0f, 10.0f, -10.0f, 0.0f, 0.0f,   0.0f, 1.0f, 0.0f, 
 		 20.0f, 10.0f, -10.0f, 20.0f, 0.0f,  0.0f, 1.0f, 0.0f,
 		-20.0f, 10.0f, 10.0f,  0.0f, 10.0f,  0.0f, 1.0f, 0.0f,
 		 20.0f, 10.0f, 10.0f,  20.0f, 10.0f, 0.0f, 1.0f, 0.0f
@@ -168,10 +168,8 @@ void RenderStation(unsigned int shaderID) {
 	model = glm::translate(model, glm::vec3(10.0f, -5.0f, 0.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 	floorTexture.UseStationTexture();
-	//shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 	meshList[0]->RenderMesh();
 
-	// Render Front Wall
 	for (int i = 1; i <= 4; i++) {
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -180,12 +178,30 @@ void RenderStation(unsigned int shaderID) {
 		meshList[i]->RenderMesh();
 	}
 
-	// Render Roof
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDepthMask(GL_FALSE);
+
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-	floorTexture.UseStationTexture(); // Use a different texture for the roof if available
+
+	// Set transparency uniform
+	int transparencyLocation = glGetUniformLocation(shaderID, "transparency");
+	glUniform1f(transparencyLocation, 0.7f); // 50% transparency
+
+	// Disable depth mask for blending
+	
+
+	floorTexture.UseStationTexture(); // Assuming you're using the floor texture for the roof
 	meshList[5]->RenderMesh();
+
+	// Re-enable depth mask
+	glDepthMask(GL_TRUE);
+
+	// Disable blending after rendering
+	glDisable(GL_BLEND);
 }
 
 
@@ -203,7 +219,7 @@ int main()
 	wallTexture = StationTexture("Resources/Textures/wall.jpg");
 	wallTexture.LoadStationTexture();
 
-	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, 0.0f, 5.0f, 0.5f);
+	camera = Camera(glm::vec3(0.0f, -95.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f, 5.0f, 0.5f);
 
 	// Generates Shader objects
 	Shader shaderProgram("Shaders/default.vert", "Shaders/default.frag");
@@ -340,7 +356,9 @@ int main()
 
 		// Take care of all GLFW events
 		glfwPollEvents();
-		glDisable(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE); // Disable culling for transparency
+		glEnable(GL_DEPTH_TEST);
+		
 
 		
 
@@ -375,10 +393,9 @@ int main()
 
 
 
-		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 500.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.01f, 100.0f);
 
 		glm::mat4 view = camera.calculateViewMatrix();
-
 		stationShader.Activate();
 		glm::mat4 station_floor = glm::mat4(1.0f);
 

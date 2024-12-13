@@ -1,14 +1,17 @@
 #version 330 core
 
-out vec4 FragColor;
+in vec2 fragTexCoord; // Interpolated texture coordinates from the vertex shader
+out vec4 fragColor;   // Final color output
 
-in vec3 Normal;
-in vec3 FragPos;
-in vec2 TexCoords;
-
-uniform sampler2D matTexture;
+uniform sampler2D matTexture;  // Texture sampler
+uniform float transparency; // Transparency level (0.0 = fully transparent, 1.0 = fully opaque)
 
 void main() {
-    vec4 diffuse = texture(matTexture, TexCoords);
-    FragColor = diffuse;
+    vec4 texColor = texture(matTexture, fragTexCoord); // Sample texture color
+
+    texColor.a *= transparency; // Adjust alpha based on transparency uniform
+    if (texColor.a < 0.1)
+        discard; // Discard fragments that are almost fully transparent
+    fragColor = vec4(texColor.rgb, texColor.a * transparency); // Apply transparency
+
 }
