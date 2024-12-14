@@ -1,4 +1,4 @@
 ﻿  Scanning sources for module dependencies...
   main.cpp
-E:\TCD\Computer Graphics\Research_Station\main.cpp(346,24): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+E:\TCD\Computer Graphics\Research_Station\main.cpp(349,24): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
   Research_Station.vcxproj -> E:\TCD\Computer Graphics\Research_Station\x64\Debug\Research_Station.exe

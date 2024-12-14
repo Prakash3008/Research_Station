@@ -329,6 +329,13 @@ int main()
 
 	Model seahorse_model("Resources/Models/Seahorse/Seahorse.obj");
 
+	Model chair1("Resources/Models/Chair/Chair.obj");
+
+	Model table1("Resources/Models/Table/table.obj");
+
+	Model gas("Resources/Models/Gas/oxygen_cylinder.glb");
+
+
 	//Model coral("Resources/Models/Coral/10010_Coral_v1.obj");
 
 	
@@ -434,9 +441,38 @@ int main()
 
 		seahorse_model.Draw(shaderProgram.ID);
 
-		glm::mat4 vw_model = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, 0.0f)); // Identity matrix
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(vw_model));
+		glm::mat4 tableModel = glm::mat4(1.0f);
+
+		tableModel = glm::translate(tableModel, glm::vec3(27.0f, -98.5f, 0.0f)); // Translate
+
+		tableModel = glm::scale(tableModel, glm::vec3(0.03f, 0.03f, 0.03f));
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(tableModel));
+
+		table1.Draw(shaderProgram.ID);
+
+		glm::mat4 chairModel = glm::mat4(1.0f);
+
+		chairModel = glm::translate(chairModel, glm::vec3(23.0f, -100.0f, 0.0f)); // Translate
+		chairModel = glm::rotate(chairModel, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate
+
+		chairModel = glm::scale(chairModel, glm::vec3(0.12f, 0.12f, 0.12f));
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(chairModel));
+
+		chair1.Draw(shaderProgram.ID);
+
+		glm::mat4 gasModel = glm::mat4(1.0f);
+
+		gasModel = glm::translate(gasModel, glm::vec3(27.0f, -98.1f, 8.0f)); // Translate
+		gasModel = glm::rotate(gasModel, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate
+
+		gasModel = glm::scale(gasModel, glm::vec3(0.02f, 0.02f, 0.02f));
+
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(gasModel));
+
+		gas.Draw(shaderProgram.ID);
+
 
 		// Handles camera inputs (delete this if you have disabled VSync)
 		// Updates and exports the camera matrix to the Vertex Shader
