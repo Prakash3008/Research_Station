@@ -189,7 +189,7 @@ void RenderStation(unsigned int shaderID) {
 
 	// Set transparency uniform
 	int transparencyLocation = glGetUniformLocation(shaderID, "transparency");
-	glUniform1f(transparencyLocation, 0.7f); // 50% transparency
+	glUniform1f(transparencyLocation, 0.6f); // 50% transparency
 
 	// Disable depth mask for blending
 	
@@ -403,15 +403,7 @@ int main()
 		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.01f, 100.0f);
 
 		glm::mat4 view = camera.calculateViewMatrix();
-		stationShader.Activate();
-		glm::mat4 station_floor = glm::mat4(1.0f);
-
-		station_floor = glm::translate(station_floor, glm::vec3(10.0f, -100.0f, 0.0f)); // Translate
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(station_floor));
-		glUniformMatrix4fv(glGetUniformLocation(stationShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
-		glUniformMatrix4fv(glGetUniformLocation(stationShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-
-		RenderStation(stationShader.ID);
+		
 
 		// Pass these matrices to your shader
 		shaderProgram.Activate();
@@ -501,6 +493,16 @@ int main()
 		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
+
+		stationShader.Activate();
+		glm::mat4 station_floor = glm::mat4(1.0f);
+
+		station_floor = glm::translate(station_floor, glm::vec3(10.0f, -100.0f, 0.0f)); // Translate
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(station_floor));
+		glUniformMatrix4fv(glGetUniformLocation(stationShader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+		glUniformMatrix4fv(glGetUniformLocation(stationShader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+
+		RenderStation(stationShader.ID);
 
 		// Switch back to the normal depth function
 		glDepthFunc(GL_LESS);
