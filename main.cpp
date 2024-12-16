@@ -371,6 +371,8 @@ int main()
 
 		camera.keyControl(mainWindow.getsKeys(), deltaTime);
 		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
+		
+
 
 
 		// Specify the color of the background
@@ -400,7 +402,9 @@ int main()
 
 
 
-		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.01f, 100.0f);
+		//glm::mat4 projection = glm::perspective(glm::radians(90.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.01f, 100.0f);
+		glm::mat4 projection = camera.calculateProjectionMatrix((float)mainWindow.getBufferWidth() / mainWindow.getBufferHeight());
+
 
 		glm::mat4 view = camera.calculateViewMatrix();
 		

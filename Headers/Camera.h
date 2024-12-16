@@ -21,6 +21,9 @@ public:
 	glm::vec3 getCameraDirection();
 
 	glm::mat4 calculateViewMatrix();
+	glm::mat4 calculateProjectionMatrix(GLfloat aspectRatio);
+	void zoomIn();
+	void zoomOut();
 
 	~Camera();
 
@@ -30,6 +33,7 @@ private:
 	glm::vec3 up;
 	glm::vec3 right;
 	glm::vec3 worldUp;
+	GLfloat fov;
 
 	GLfloat yaw;
 	GLfloat pitch;
@@ -38,4 +42,5 @@ private:
 	GLfloat turnSpeed;
 
 	void update();
+
 };

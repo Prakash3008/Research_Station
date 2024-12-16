@@ -15,6 +15,7 @@ Camera::Camera(glm::vec3 startPosition, glm::vec3 startUp, GLfloat startYaw, GLf
 
 	moveSpeed = startMoveSpeed;
 	turnSpeed = startTurnSpeed;
+	fov = 75.0f;
 
 	update();
 }
@@ -42,9 +43,13 @@ void Camera::keyControl(bool* keys, GLfloat deltaTime)
 	if (keys[GLFW_KEY_D])
 	{
 		position += right * velocity;
+	}	
+	if (keys[GLFW_KEY_KP_ADD]) {
+		zoomIn();
 	}
-
-	
+	if (keys[GLFW_KEY_KP_SUBTRACT]) {
+		zoomOut();
+	}
 }
 
 void Camera::mouseControl(GLfloat xChange, GLfloat yChange)
@@ -80,6 +85,23 @@ glm::vec3 Camera::getCameraPosition()
 glm::vec3 Camera::getCameraDirection()
 {
 	return glm::normalize(front);
+}
+
+glm::mat4 Camera::calculateProjectionMatrix(GLfloat aspectRatio)
+{
+	return glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
+}
+
+void Camera::zoomIn()
+{
+	if (fov > 1.0f)
+		fov -= 1.0f;  // Zoom in (decrease FOV)
+}
+
+void Camera::zoomOut()
+{
+	if (fov < 75.0f)
+		fov += 1.0f;  // Zoom out (increase FOV)
 }
 
 void Camera::update()
